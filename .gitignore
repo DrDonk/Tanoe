@@ -1,0 +1,8 @@
+# Dave
+dist/
+private/
+._.*
+.env
+.vscode/
+.zed/
+hosts.backup.*
