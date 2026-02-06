@@ -41,7 +41,7 @@ show_status() {
 # Function to check auto updates
 auto_update_off() {
     auto=$(defaults read /Library/Preferences/com.apple.SoftwareUpdate AutomaticDownload)
-    if [[ $autoupdates -eq 1 ]]; then
+    if [[ $auto -eq 1 ]]; then
         echo "${YELLOW}macOS automatic updates are enabled.${NC}"
         echo -e "${YELLOW}Do you want to disable automatic software updates? (y/n):${NC} \c"
         read -r response
