@@ -30,7 +30,8 @@ There are 2 things to be aware of if you use this solution.
 will continue to be updated.
 
 > [!IMPORTANT]  
-> No macOS updates will be presented, for example, macOS 26 Tahoe upgrades or Sequoia or Sonoma minor updates. If you need to run a minor update you will need to toggle the blocker off, run the update and then re-enable it.
+> No macOS updates will be presented, for example, macOS 26 Tahoe upgrades or Sequoia or Sonoma minor updates. 
+> If you need to run a minor update you will need to toggle the blocker off, run the update and then re-enable it.
 
 ## How to use it
 1. Download a release from [Releases](https://github.com/DrDonk/Tanoe/releases) on GitHub.
@@ -39,6 +40,9 @@ will continue to be updated.
 
 > [!NOTE]  
 > Updating the /etc/hosts file requires admin privileges and you will be prompted for your password.
+
+> [!TIP]
+> Tanoe checks that macOS automatic software updates are disabled to ensure your safety.
 
 ### Enable the blocker
 Run `./tanoe on`

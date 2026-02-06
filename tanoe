@@ -37,6 +37,26 @@ show_status() {
     fi
 }
 
+
+# Function to check auto updates
+auto_update_off() {
+    auto=$(defaults read /Library/Preferences/com.apple.SoftwareUpdate AutomaticDownload)
+    if [[ $autoupdates -eq 1 ]]; then
+        echo "${YELLOW}macOS automatic updates are enabled.${NC}"
+        echo -e "${YELLOW}Do you want to disable automatic software updates? (y/n):${NC} \c"
+        read -r response
+        if [[ "$response" =~ ^[Yy]$ ]]; then
+            open "x-apple.systempreferences:com.apple.Software-Update-Settings.extension"
+            exit
+        else
+            echo "${RED}Tanoe will not run until auto updates are disabled${NC}"
+            exit
+        fi
+    else
+        return
+    fi
+}
+
 # Function to add entry
 add_entry() {
     if check_status; then
@@ -120,6 +140,7 @@ show_usage() {
 }
 
 # Main script logic
+auto_update_off
 case "${1:-}" in
     on)
         add_entry
