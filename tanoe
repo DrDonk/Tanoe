@@ -5,7 +5,8 @@
 # tanoe.sh - Manage gdmf.apple.com in /etc/hosts
 # Usage: ./tanoe [on|off|status]
 
-#set -x
+# Enable debug mode if DEBUG environment variable is set to any non-empty value
+[[ -n "$DEBUG" ]] && set -x
 
 HOSTS_FILE="/etc/hosts"
 HOST_ENTRY="127.0.0.1 gdmf.apple.com"
