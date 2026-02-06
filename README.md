@@ -104,4 +104,20 @@ admin@sequoihoe ~ % ./tanoe status
   Entry '127.0.0.1 gdmf.apple.com' is not present in /etc/hosts
 ```
 
+## Example
+
+Here are screenshots from a MacBook Air 2017 (MacBookAir7,2) running a test with older 
+version of Sequoia and Xcode tools.
+
+### Blocker disabled
+![](assets/tanoe-off-01.png) 
+
+![](assets/tanoe-off-02.png)
+
+
+### Blocker enabled
+![](assets/tanoe-on-01.png)
+
+![](assets/tanoe-on-02.png)
+
 (C) David Parsons, 2026
