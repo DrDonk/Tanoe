@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>AutomaticDownload</key>
+	<false/>
+	<key>FirstOfferDateDictionary</key>
+	<dict>
+		<key>MSU_UPDATE_24G222_patch_15.7_minor</key>
+		<date>2025-09-23T14:39:55Z</date>
+		<key>MSU_UPDATE_24G231_patch_15.7.1_minor</key>
+		<date>2025-10-18T12:53:34Z</date>
+		<key>MSU_UPDATE_24G325_patch_15.7.2_minor</key>
+		<date>2025-11-05T14:48:20Z</date>
+		<key>MSU_UPDATE_24G419_patch_15.7.3_minor</key>
+		<date>2025-12-13T19:58:22Z</date>
+		<key>MSU_UPDATE_24G517_patch_15.7.4_minor</key>
+		<date>2026-02-18T20:42:55Z</date>
+		<key>MSU_UPDATE_24G84_patch_15.6_minor</key>
+		<date>2025-08-03T16:18:19Z</date>
+		<key>MSU_UPDATE_24G90_patch_15.6.1_minor</key>
+		<date>2025-08-28T11:25:57Z</date>
+		<key>MSU_UPDATE_25A354_patch_26.0_major</key>
+		<date>2025-09-23T14:39:55Z</date>
+		<key>MSU_UPDATE_25A362_patch_26.0.1_major</key>
+		<date>2025-10-19T12:33:52Z</date>
+		<key>MSU_UPDATE_25B78_patch_26.1_major</key>
+		<date>2025-11-05T14:48:20Z</date>
+		<key>MSU_UPDATE_25C56_patch_26.2_major</key>
+		<date>2025-12-13T19:58:22Z</date>
+		<key>MSU_UPDATE_25D125_patch_26.3_major</key>
+		<date>2026-02-18T20:42:55Z</date>
+	</dict>
+	<key>LastAttemptBuildVersion</key>
+	<string>15.7.3 (24G419)</string>
+	<key>LastAttemptSystemVersion</key>
+	<string>15.7.3 (24G419)</string>
+	<key>LastBackgroundSuccessfulDate</key>
+	<date>2026-02-18T20:36:58Z</date>
+	<key>LastCollectedLoginCredentialDate</key>
+	<date>2025-12-13T19:58:54Z</date>
+	<key>LastFullSuccessfulDate</key>
+	<date>2026-02-19T08:47:41Z</date>
+	<key>LastRecommendedMajorOSBundleIdentifier</key>
+	<string></string>
+	<key>LastResultCode</key>
+	<integer>0</integer>
+	<key>LastSessionSuccessful</key>
+	<true/>
+	<key>LastSuccessfulBackgroundMSUScanDate</key>
+	<date>2026-02-19T08:47:13Z</date>
+	<key>LastSuccessfulDate</key>
+	<date>2026-02-19T08:47:53Z</date>
+	<key>PrimaryLanguages</key>
+	<array>
+		<string>en-GB</string>
+	</array>
+	<key>RecommendedUpdates</key>
+	<array>
+		<dict>
+			<key>Display Name</key>
+			<string>Safari</string>
+			<key>Display Version</key>
+			<string>26.3</string>
+			<key>Identifier</key>
+			<string>Safari26.3SequoiaAuto</string>
+			<key>Product Key</key>
+			<string>089-65716</string>
+		</dict>
+		<dict>
+			<key>Display Name</key>
+			<string>macOS Sequoia 15.7.4</string>
+			<key>Display Version</key>
+			<string>15.7.4</string>
+			<key>Identifier</key>
+			<string>MSU_UPDATE_24G517_patch_15.7.4_minor</string>
+			<key>MobileSoftwareUpdate</key>
+			<true/>
+			<key>Product Key</key>
+			<string>MSU_UPDATE_24G517_patch_15.7.4_minor</string>
+		</dict>
+	</array>
+</dict>
+</plist>
