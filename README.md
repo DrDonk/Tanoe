@@ -23,6 +23,15 @@ located in the /etc folder on your Mac. This is done by adding a line like this 
 This redirects the URL to the host machine, which of course cannot provide the relevant details.
 macOS sees this as no updates.
 
+If you do not want to run the script you will need to manually add the line to the hosts file. After saving it
+reboot the machine or run these 3 commands from Termainl to reset the update system.
+
+```
+sudo dscacheutil -flushcache
+sudo killall -HUP mDNSResponder 2>/dev/null
+softwareupdate -l
+```
+
 There are 2 things to be aware of if you use this solution.
 
 > [!NOTE]  
