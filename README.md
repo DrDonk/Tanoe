@@ -24,7 +24,7 @@ This redirects the URL to the host machine, which of course cannot provide the r
 macOS sees this as no updates.
 
 If you do not want to run the script you will need to manually add the line to the hosts file. After saving it
-reboot the machine or run these 3 commands from Termainl to reset the update system.
+reboot the machine or run these 3 commands from Terminal to reset the update system.
 
 ```
 sudo dscacheutil -flushcache
