@@ -22,7 +22,7 @@
 		</dict>
 	</array>
 	<key>PayloadDisplayName</key>
-	<string>Disable Software Update</string>
+	<string>Disable Software Update Panel</string>
 	<key>PayloadIdentifier</key>
 	<string>iMazing-Profile-Editor.8D8D6759-5F07-4208-86A1-4433EFD15748</string>
 	<key>PayloadScope</key>
