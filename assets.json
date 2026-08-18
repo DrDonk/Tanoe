@@ -1,15 +1,15 @@
 {
   {
-    "build": "24G720",
-    "name": "Sequoia 15.7.7",
-    "url": "https://swcdn.apple.com/content/downloads/08/08/122-77920-A_24DGKW16ZQ/p2g06dyhtgf9mgf2yt1p4ihzvkkk91qvlf/InstallAssistant.pkg",
-    "version": "15.7.7"
+    "build": "24G830",
+    "name": "Sequoia 15.7.9",
+    "url": "https://swcdn.apple.com/content/downloads/16/08/140-85388-A_3LX3Q36I6P/zxod6nr7zkovvsml6s628z44gdbc4exa5p/InstallAssistant.pkg",
+    "version": "15.7.9"
   },
   {
-    "build": "23J520",
-    "name": "Sonoma 14.8.7",
-    "url": "https://swcdn.apple.com/content/downloads/61/03/122-77891-A_GYK4YJ2CRM/8xrsgsownndvprmza1q0cvbsppw3ohtk85/InstallAssistant.pkg",
-    "version": "14.8.7"
+    "build": "23J631",
+    "name": "Sonoma 14.8.9",
+    "url": "https://swcdn.apple.com/content/downloads/13/30/140-88558-A_TN3FIE7J63/p61cqj3ktmcqilz3q64ls4ekp1os9c8qbp/InstallAssistant.pkg",
+    "version": "14.8.9"
   },
   {
     "build": "22H730",
