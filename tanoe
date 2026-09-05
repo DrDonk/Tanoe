@@ -2,15 +2,36 @@
 # SPDX-FileCopyrightText: © 2026 David Parsons
 # SPDX-License-Identifier: MIT
 
-# tanoe.sh - Manage gdmf.apple.com in /etc/hosts
-# Usage: ./tanoe [on|off|status]
+# tanoe.sh - Manage update-check host entries in /etc/hosts
+# Usage: ./tanoe [on|off|status|updates]
+#
+# gdmf.apple.com   - always blocked (all supported macOS versions)
+# swscan.apple.com - also blocked on macOS 11-13 (Big Sur, Monterey, Ventura)
+# swdist.apple.com - also blocked on macOS 11-13 (Big Sur, Monterey, Ventura)
 
 # Enable debug mode if DEBUG environment variable is set to any non-empty value
 [[ -n "$DEBUG" ]] && set -x
 
 HOSTS_FILE="/etc/hosts"
-HOST_ENTRY="127.0.0.1 gdmf.apple.com"
 COMMENT="# Managed by tanoe"
+
+# Detect macOS major version
+MACOS_VERSION=$(sw_vers -productVersion | cut -d. -f1)
+
+if [[ "$MACOS_VERSION" -lt 11 ]]; then
+    echo "Unsupported macOS version: ${MACOS_VERSION}"
+    exit 1
+fi
+
+# gdmf.apple.com is always blocked on all supported versions
+GDMF_ENTRY="127.0.0.1 gdmf.apple.com"
+
+# swscan.apple.com is additionally blocked on macOS 11-13
+if [[ "$MACOS_VERSION" -ge 11 && "$MACOS_VERSION" -le 13 ]]; then
+    BLOCK_SWSCAN=1
+else
+    BLOCK_SWSCAN=0
+fi
 
 # Colors for output
 RED='\033[0;31m'
@@ -18,28 +39,51 @@ GREEN='\033[0;32m'
 YELLOW='\033[1;33m'
 NC='\033[0m' # No Color
 
-# Function to check if entry exists
+# Check if a specific host entry exists in the hosts file
+check_entry() {
+    local host="$1"
+    grep -q "^127\.0\.0\.1[[:space:]]*${host}" "$HOSTS_FILE" 2>/dev/null
+}
+
+# Check overall status - true only if all required entries are present
 check_status() {
-    if grep -q "^127\.0\.0\.1[[:space:]]*gdmf\.apple\.com" "$HOSTS_FILE" 2>/dev/null; then
-        return 0  # Entry exists
+    if (( BLOCK_SWSCAN )); then
+        check_entry "gdmf.apple.com" && check_entry "swscan.apple.com" && check_entry "swdist.apple.com"
     else
-        return 1  # Entry does not exist
+        check_entry "gdmf.apple.com"
     fi
 }
 
-# Function to display current status
+# Display current status of each entry
 show_status() {
+    echo "macOS ${MACOS_VERSION} - required hosts entries:"
+    echo ""
+    if check_entry "gdmf.apple.com"; then
+        echo "${GREEN}  ✓ gdmf.apple.com   is blocked${NC}"
+    else
+        echo "${YELLOW}  ✗ gdmf.apple.com   is not blocked${NC}"
+    fi
+    if (( BLOCK_SWSCAN )); then
+        if check_entry "swscan.apple.com"; then
+            echo "${GREEN}  ✓ swscan.apple.com is blocked${NC}"
+        else
+            echo "${YELLOW}  ✗ swscan.apple.com is not blocked${NC}"
+        fi
+        if check_entry "swdist.apple.com"; then
+            echo "${GREEN}  ✓ swdist.apple.com is blocked${NC}"
+        else
+            echo "${YELLOW}  ✗ swdist.apple.com is not blocked${NC}"
+        fi
+    fi
+    echo ""
     if check_status; then
         echo "${GREEN}✓ Status: ENABLED${NC}"
-        echo "  Entry '${HOST_ENTRY}' is present in ${HOSTS_FILE}"
     else
-        echo "${YELLOW}✗ Status: DISABLED${NC}"
-        echo "  Entry '${HOST_ENTRY}' is not present in ${HOSTS_FILE}"
+        echo "${YELLOW}✗ Status: DISABLED (one or more entries missing)${NC}"
     fi
 }
 
-
-# Function to check auto updates
+# Check auto updates setting and prompt to disable if on
 auto_update_off() {
     auto=$(defaults read /Library/Preferences/com.apple.SoftwareUpdate AutomaticDownload)
     if [[ $auto -eq 1 ]]; then
@@ -58,89 +102,224 @@ auto_update_off() {
     fi
 }
 
-# Function to add entry
-add_entry() {
-    if check_status; then
-        echo "${YELLOW}Entry already exists in ${HOSTS_FILE}${NC}"
+# Append a single entry to hosts if not already present
+_add_host_entry() {
+    local entry="$1" host="$2"
+    if check_entry "$host"; then
+        echo "${YELLOW}  Entry '${entry}' already exists - skipping${NC}"
         return 0
     fi
-    
-    echo "Adding entry to ${HOSTS_FILE}..."
-    
-    # Create backup in current directory
-    BACKUP_FILE="./hosts.backup.$(date +%Y%m%d_%H%M%S)"
-    sudo cp "$HOSTS_FILE" "$BACKUP_FILE"
-    echo "Backup created: $BACKUP_FILE"
-    
-    # Check if file ends with newline, if not add one
+    # Ensure file ends with a newline before appending
     if [ -n "$(tail -c 1 "$HOSTS_FILE")" ]; then
         echo "" | sudo tee -a "$HOSTS_FILE" > /dev/null
     fi
-    
-    # Add entry with comment on same line to avoid orphaned comments
-    echo "$HOST_ENTRY  $COMMENT" | sudo tee -a "$HOSTS_FILE" > /dev/null
-    
-    if check_status; then
-        echo "${GREEN}✓ Successfully added entry${NC}"
-        # Flush DNS cache
-        echo "Flushing DNS cache..."
-        sudo dscacheutil -flushcache
-        sudo killall -HUP mDNSResponder 2>/dev/null
-        echo "Updating available updates..."
-        softwareupdate --list
-        return 0
+    echo "${entry}  ${COMMENT}" | sudo tee -a "$HOSTS_FILE" > /dev/null
+    if check_entry "$host"; then
+        echo "${GREEN}  ✓ Added '${entry}'${NC}"
     else
-        echo "${RED}✗ Failed to add entry${NC}"
+        echo "${RED}  ✗ Failed to add '${entry}'${NC}"
         return 1
     fi
 }
 
-# Function to remove entry
-remove_entry() {
-    if ! check_status; then
-        echo "${YELLOW}Entry does not exist in ${HOSTS_FILE}${NC}"
+# Remove a single entry from hosts
+_remove_host_entry() {
+    local host="$1"
+    if ! check_entry "$host"; then
+        echo "${YELLOW}  Entry for '${host}' not present - skipping${NC}"
         return 0
     fi
-    
-    echo "Removing entry from ${HOSTS_FILE}..."
-    
-    # Create backup
+    sudo sed -i.tmp "/^127\.0\.0\.1[[:space:]]*${host}/d" "$HOSTS_FILE"
+    sudo rm -f "${HOSTS_FILE}.tmp"
+    if ! check_entry "$host"; then
+        echo "${GREEN}  ✓ Removed '${host}'${NC}"
+    else
+        echo "${RED}  ✗ Failed to remove '${host}'${NC}"
+        return 1
+    fi
+}
+
+# Add all required entries
+add_entry() {
+    echo "Adding entries to ${HOSTS_FILE}..."
+
+    BACKUP_FILE="./hosts.backup.$(date +%Y%m%d_%H%M%S)"
+    sudo cp "$HOSTS_FILE" "$BACKUP_FILE"
+    echo "Backup created: $BACKUP_FILE"
+    echo ""
+
+    _add_host_entry "127.0.0.1 gdmf.apple.com" "gdmf.apple.com"
+    if (( BLOCK_SWSCAN )); then
+        _add_host_entry "127.0.0.1 swscan.apple.com" "swscan.apple.com"
+        _add_host_entry "127.0.0.1 swdist.apple.com" "swdist.apple.com"
+    fi
+
+    echo ""
+    echo "Flushing DNS cache..."
+    sudo dscacheutil -flushcache
+    sudo killall -HUP mDNSResponder 2>/dev/null
+    defaults write com.apple.systempreferences AttentionPrefBundleIDs 0  
+    killall Dock
+    if (( ! BLOCK_SWSCAN )); then
+        echo "Updating available updates..."
+        softwareupdate --list
+    fi
+}
+
+# Remove all managed entries
+remove_entry() {
+    echo "Removing entries from ${HOSTS_FILE}..."
+
     sudo cp "$HOSTS_FILE" "${HOSTS_FILE}.backup.$(date +%Y%m%d_%H%M%S)"
-    
-    # Remove entry (handles both inline comment and separate comment line formats)
-    sudo sed -i.tmp '/^127\.0\.0\.1[[:space:]]*gdmf\.apple\.com/d' "$HOSTS_FILE"
-    # Also remove standalone comment line if it exists
+    echo ""
+
+    _remove_host_entry "gdmf.apple.com"
+    if (( BLOCK_SWSCAN )); then
+        _remove_host_entry "swscan.apple.com"
+        _remove_host_entry "swdist.apple.com"
+    fi
+    # Clean up any orphaned legacy comment lines
     sudo sed -i.tmp '/^# Managed by hosts-manager\.zsh$/d' "$HOSTS_FILE"
     sudo rm -f "${HOSTS_FILE}.tmp"
-    
-    if ! check_status; then
-        echo "${GREEN}✓ Successfully removed entry${NC}"
-        # Flush DNS cache
-        echo "Flushing DNS cache..."
-        sudo dscacheutil -flushcache
-        sudo killall -HUP mDNSResponder 2>/dev/null
+
+    echo ""
+    echo "Flushing DNS cache..."
+    sudo dscacheutil -flushcache
+    sudo killall -HUP mDNSResponder 2>/dev/null
+    defaults write com.apple.systempreferences AttentionPrefBundleIDs 0  
+    killall Dock
+    if (( ! BLOCK_SWSCAN )); then
         echo "Updating available updates..."
         softwareupdate --list
+    fi
+}
+
+# Check for available updates from assets.json
+# Override URL for testing: TANOE_ASSETS_URL="file:///tmp/test.json" ./tanoe updates
+check_updates() {
+    local ASSETS_URL="${TANOE_ASSETS_URL:-https://drdonk.github.io/Tanoe/assets.json}"
+    [[ -n "$TANOE_ASSETS_URL" ]] && echo "${YELLOW}Using override URL: ${ASSETS_URL}${NC}"
+
+    local CURRENT_VERSION CURRENT_MAJOR
+    CURRENT_VERSION=$(sw_vers -productVersion)
+    CURRENT_MAJOR=$(echo "$CURRENT_VERSION" | cut -d. -f1)
+
+    echo "Current macOS version: ${CURRENT_VERSION}"
+    echo "Checking for available updates..."
+    echo ""
+
+    local JSON
+    if ! JSON=$(curl -fsSL "$ASSETS_URL" 2>/dev/null); then
+        echo "${RED}✗ Failed to fetch update information from:${NC}"
+        echo "  ${ASSETS_URL}"
+        return 1
+    fi
+
+    # Parse entries using only zsh - no jq required.
+    # Fields in assets.json are alphabetical: build, name, url, version.
+    # Flush each entry on "version" as it is the last field per object.
+    local -a names versions builds urls
+    local line name version build url entry_major
+
+    while IFS= read -r line; do
+        [[ "$line" =~ '"name":[[:space:]]*"([^"]+)"' ]]  && name="${match[1]}"
+        [[ "$line" =~ '"build":[[:space:]]*"([^"]+)"' ]]  && build="${match[1]}"
+        [[ "$line" =~ '"url":[[:space:]]*"([^"]+)"' ]]    && url="${match[1]}"
+        if [[ "$line" =~ '"version":[[:space:]]*"([^"]+)"' ]]; then
+            version="${match[1]}"
+            # Include if strictly newer within same major, or any higher major.
+            # Exclude older major versions (e.g. running 15.x never sees 14.x).
+            entry_major=$(echo "$version" | cut -d. -f1)
+            if (( entry_major > CURRENT_MAJOR )) || \
+               ( (( entry_major == CURRENT_MAJOR )) && \
+                 [[ "$(printf '%s\n%s\n' "$CURRENT_VERSION" "$version" | sort -V | tail -1)" == "$version" \
+                    && "$version" != "$CURRENT_VERSION" ]] ); then
+                names+=("$name")
+                versions+=("$version")
+                builds+=("$build")
+                urls+=("$url")
+            fi
+            name=""; version=""; build=""; url=""
+        fi
+    done <<< "$JSON"
+
+    if (( ${#names} == 0 )); then
+        echo "${GREEN}✓ No updates available - macOS ${CURRENT_VERSION} is already the latest available.${NC}"
         return 0
+    fi
+
+    echo "${GREEN}Updates available for macOS ${CURRENT_VERSION}:${NC}"
+    echo ""
+
+    local i
+    for (( i=1; i<=${#names}; i++ )); do
+        printf "  %d) %-28s  build %-10s\n" "$i" "${names[$i]} (${versions[$i]})" "${builds[$i]}"
+    done
+    echo ""
+    printf "  0) Cancel\n"
+    echo ""
+
+    local choice
+    while true; do
+        printf "Select an update to download (0-%d): " "${#names}"
+        read -r choice
+        if [[ "$choice" == "0" ]]; then
+            echo "Cancelled."
+            return 0
+        elif [[ "$choice" =~ ^[0-9]+$ ]] && (( choice >= 1 && choice <= ${#names} )); then
+            break
+        else
+            echo "${RED}Invalid selection, please enter a number between 0 and ${#names}.${NC}"
+        fi
+    done
+
+    local selected_name="${names[$choice]}"
+    local selected_url="${urls[$choice]}"
+    local filename="${selected_name// /_}.pkg"
+    filename="${filename//\//_}"
+
+    echo ""
+    echo "Downloading ${selected_name}..."
+    echo "Source: ${selected_url}"
+    echo "Saving as: ${filename}"
+    echo ""
+
+    if curl -L --progress-bar -o "${filename}" "${selected_url}"; then
+        echo ""
+        echo "${GREEN}✓ Download complete: ${filename}${NC}"
+        echo "  Run the package to begin the macOS upgrade."
     else
-        echo "${RED}✗ Failed to remove entry${NC}"
+        echo ""
+        echo "${RED}✗ Download failed.${NC}"
         return 1
     fi
 }
 
-# Function to show usage
+# Show usage
 show_usage() {
-    echo "Usage: $0 [on|off|status]"
+    echo "Usage: $0 [on|off|status|updates]"
     echo ""
     echo "Commands:"
-    echo "  on      - Add '${HOST_ENTRY}' to ${HOSTS_FILE}"
-    echo "  off     - Remove '${HOST_ENTRY}' from ${HOSTS_FILE}"
-    echo "  status  - Show current status of the entry"
+    echo "  on      - Add hosts entries to block macOS update checks"
+    echo "  off     - Remove hosts entries"
+    echo "  status  - Show current status of all entries"
+    echo "  updates - Check for newer macOS versions and optionally download"
+    echo ""
+    echo "Entries managed (macOS ${MACOS_VERSION}):"
+    echo "  gdmf.apple.com   (always blocked)"
+    if (( BLOCK_SWSCAN )); then
+        echo "  swscan.apple.com (macOS 11-13)"
+        echo "  swdist.apple.com (macOS 11-13)"
+    fi
+    echo ""
+    echo "Environment variables:"
+    echo "  DEBUG            - Enable shell debug output"
+    echo "  TANOE_ASSETS_URL - Override assets URL for testing"
     echo ""
     echo "Note: This script requires sudo privileges to modify ${HOSTS_FILE}"
 }
 
-# Main script logic
+# Main
 auto_update_off
 case "${1:-}" in
     on)
@@ -151,6 +330,9 @@ case "${1:-}" in
         ;;
     status)
         show_status
+        ;;
+    updates)
+        check_updates
         ;;
     *)
         show_usage

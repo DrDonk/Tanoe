@@ -23,6 +23,15 @@ located in the /etc folder on your Mac. This is done by adding a line like this 
 This redirects the URL to the host machine, which of course cannot provide the relevant details.
 macOS sees this as no updates.
 
+For Big Sur, Monterey and Ventura you will also need to block access to:
+
+```
+swscan.apple.com
+swdist.apple.com
+```
+and you will not be able to see any updates from Apple servers. This should not be a problem if you set it up
+after makiong sure you system has all relevant updates installed.
+
 If you do not want to run the script you will need to manually add the line to the hosts file. After saving it
 reboot the machine or run these 3 commands from Terminal to reset the update system.
 
@@ -36,11 +45,12 @@ There are 2 things to be aware of if you use this solution.
 
 > [!NOTE]  
 > All other updates such as Safari, Command Line Tools for Xcode and security updates etc.
-will continue to be updated.
+will continue to be updated for Sonoma and Sequoia.
 
 > [!IMPORTANT]  
 > No macOS updates will be presented, for example, macOS 26 Tahoe upgrades or Sequoia or Sonoma minor updates. 
-> If you need to run a minor update you will need to toggle the blocker off, run the update and then re-enable it.
+> If you need to run a minor update you will need to toggle the blocker off, run the update and then re-enable it,
+> or use the Tanoe updates command.
 
 ## How to use it
 1. Download a release from [Releases](https://github.com/DrDonk/Tanoe/releases) on GitHub.
@@ -115,6 +125,36 @@ admin@sequoihoe ~ % ./tanoe status
 admin@sequoihoe ~ % ./tanoe status
 ✗ Status: DISABLED
   Entry '127.0.0.1 gdmf.apple.com' is not present in /etc/hosts
+```
+
+### Check for updates
+This command checks a Tanoe maintained file (https://drdonk.github.io/Tanoe/assets.json) to find the latest full
+installer packages available from Apple. This means if there is a macOS update you can retrieve the full installer without having to disable Tanoe.
+
+Run `./tanoe updates`
+
+If there are no updates the command will exit.
+
+```
+admin@sequoihoe Tanoe % ./tanoe updates
+Current macOS version: 15.7.9
+Checking for available updates...
+
+✓ No updates available - macOS 15.7.9 is already the latest available.
+```
+If there is a newer version available you are given the option to download the full installer from Apple's servers.
+```
+admin@sequoihoe Tanoe % ./tanoe updates
+Current macOS version: 15.7.8
+Checking for available updates...
+
+Updates available for macOS 15.7.8:
+
+  1) Sequoia 15.7.9 (15.7.9)       build 24G830
+
+  0) Cancel
+
+Select an update to download (0-1):
 ```
 
 ## Example
