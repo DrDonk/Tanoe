@@ -8,7 +8,7 @@
 # gdmf.apple.com   - always blocked (all supported macOS versions)
 # swscan.apple.com - also blocked on macOS 11-14 (Big Sur, Monterey, Ventura, Sonoma)
 # swdist.apple.com - also blocked on macOS 11-14 (Big Sur, Monterey, Ventura, Sonoma)
-
+#
 # Enable debug mode if DEBUG environment variable is set to any non-empty value
 [[ -n "$DEBUG" ]] && set -x
 
