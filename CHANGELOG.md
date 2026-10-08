@@ -4,6 +4,10 @@ Change logs can also be found online https://github.com/DrDonk/Tanoe/releases
 
 All dates are UK DD/MM/YY format.
 
+## 08/10/26 2.0.1
+* Add Sonoma to full software update block
+* Fixed Ventura full update block issue wurh macOS version checking for swscan block
+
 ## 06/09/26 2.0.0
 * Added swdist and swscan URL stop blocklist for Big Sur, Monterey and Ventura
 * New option to check for updates and download the full installer package from Apple
