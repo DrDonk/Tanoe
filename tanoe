@@ -6,8 +6,8 @@
 # Usage: ./tanoe [on|off|status|updates]
 #
 # gdmf.apple.com   - always blocked (all supported macOS versions)
-# swscan.apple.com - also blocked on macOS 11-13 (Big Sur, Monterey, Ventura)
-# swdist.apple.com - also blocked on macOS 11-13 (Big Sur, Monterey, Ventura)
+# swscan.apple.com - also blocked on macOS 11-14 (Big Sur, Monterey, Ventura, Sonoma)
+# swdist.apple.com - also blocked on macOS 11-14 (Big Sur, Monterey, Ventura, Sonoma)
 
 # Enable debug mode if DEBUG environment variable is set to any non-empty value
 [[ -n "$DEBUG" ]] && set -x
@@ -23,11 +23,8 @@ if [[ "$MACOS_VERSION" -lt 11 ]]; then
     exit 1
 fi
 
-# gdmf.apple.com is always blocked on all supported versions
-GDMF_ENTRY="127.0.0.1 gdmf.apple.com"
-
-# swscan.apple.com is additionally blocked on macOS 11-13
-if [[ "$MACOS_VERSION" -ge 11 && "$MACOS_VERSION" -le 13 ]]; then
+# Check version and switch flag if additional blocks needed
+if [[ "$MACOS_VERSION" -ge 11 && "$MACOS_VERSION" -le 15 ]]; then
     BLOCK_SWSCAN=1
 else
     BLOCK_SWSCAN=0
